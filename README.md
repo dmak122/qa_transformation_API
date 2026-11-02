@@ -1,8 +1,8 @@
 # sb-API
 
-Учебный проект для API-автоматизации на TypeScript и Playwright. Тесты работают с локальным JSON Server.
+An API automation learning project built with TypeScript and Playwright. Tests run against a local JSON Server.
 
-## Запуск
+## Getting Started
 
 ```bash
 npm ci
@@ -10,60 +10,60 @@ npm test
 npx tsc --noEmit
 ```
 
-`npm test` запускает Playwright. Fixture автоматически поднимает локальный API для каждого worker и останавливает его после тестов. При параллельном запуске у каждого worker свой порт и временная копия начальных данных из `data/db.json`, поэтому изменения одного worker не влияют на тесты другого.
+`npm test` runs Playwright. A fixture automatically starts a local API server for each worker and stops it after the tests finish. Each worker gets its own port and a temporary copy of the seed data from `data/db.json`, so changes made by one worker do not affect another.
 
-## Структура
+## Project Structure
 
 ```text
 data/
-  db.json                    Начальные данные локального API
+  db.json                    Seed data for the local API
 tests/
   api/
-    posts.api.ts             HTTP-методы ресурса Posts
-    posts.read.spec.ts       Проверки чтения Posts
-    posts.write.spec.ts      Проверки POST, PUT, PATCH и DELETE
-    posts.crud.spec.ts       Независимый сквозной CRUD-сценарий
-    users.api.ts             HTTP-методы ресурса Users
-    users.spec.ts            Проверки Users
+    posts.api.ts             HTTP methods for the Posts resource
+    posts.read.spec.ts       Posts read tests
+    posts.write.spec.ts      POST, PUT, PATCH, and DELETE tests
+    posts.crud.spec.ts       Independent end-to-end CRUD scenario
+    users.api.ts             HTTP methods for the Users resource
+    users.spec.ts            Users tests
   data/
-    posts-by-user.cases.ts   Набор данных для параметризованных GET-проверок
+    posts-by-user.cases.ts   Dataset for parameterized GET tests
   fixtures/
-    api.fixture.ts           Worker-серверы и тестовые API-клиенты
+    api.fixture.ts           Worker servers and test API clients
   helpers/
-    add-test-description.ts  Описание теста в Playwright-отчёте
-    api-request-options.ts   Общие baseURL и HTTP-заголовки
+    add-test-description.ts  Adds descriptions to the Playwright report
+    api-request-options.ts   Shared base URL and HTTP headers
   schemas/
-    post.schema.ts           JSON Schema и проверка ответа Post через Ajv
-    user.schema.ts           JSON Schema и проверка вложенного ответа User через Ajv
-playwright.config.ts         Конфигурация Playwright
+    post.schema.ts           Post JSON Schema and Ajv validation
+    user.schema.ts           User JSON Schema and nested-response validation
+playwright.config.ts         Playwright configuration
 ```
 
-## Как устроен API-слой
+## API Layer
 
-1. Worker-scoped fixture создаёт временную копию seed-данных и запускает JSON Server на свободном порту.
-2. `apiRequest` создаёт `APIRequestContext` с URL этого worker и заголовком `Accept: application/json`.
-3. API-клиенты инкапсулируют маршруты и HTTP-вызовы. Тесты проверяют статусы и содержимое ответов.
-4. `parsePostResponse` проверяет контракт Post по JSON Schema и возвращает типизированный объект.
+1. A worker-scoped fixture creates a temporary copy of the seed data and starts JSON Server on an available port.
+2. `apiRequest` creates an `APIRequestContext` with the worker's URL and the `Accept: application/json` header.
+3. API clients encapsulate routes and HTTP requests. Tests verify response status codes and content.
+4. `parsePostResponse` validates a Post response against its JSON Schema and returns a typed object.
 
-API локальный и предназначен для обучения; это не production-сервис. Изменения тестов не затрагивают исходный `data/db.json`.
+The local API is for learning purposes and is not a production service. Test changes do not modify the original `data/db.json`.
 
 ## CI
 
-GitHub Actions workflow `.github/workflows/api-tests.yml` запускает `npm ci` и `npm test` для push и pull request в `main`.
+The GitHub Actions workflow at `.github/workflows/api-tests.yml` runs `npm ci` and `npm test` on pushes and pull requests targeting `main`.
 
-## Покрытие и ограничения
+## Coverage and Limitations
 
-| Область | Проверки |
+| Area | Coverage |
 |---|---|
-| `GET /posts/:id` | Существующий пост, JSON-заголовок и Post schema; отсутствующий или некорректный ID — `404` |
-| `GET /posts?userId=...` | Data-driven фильтрация для двух пользователей из отдельного dataset; неизвестный пользователь — пустой массив |
-| `POST /posts` | Создание и проверка ответа по Post schema |
-| `PUT /posts/:id` | Полное обновление и проверка ответа по Post schema; отсутствующий ID — `404` и ресурс не создаётся |
-| `PATCH /posts/:id` | Частичное обновление; проверка сохранения остальных полей после повторного GET; отсутствующий ID — `404` и ресурс не создаётся |
-| `DELETE /posts/:id` | Успешный ответ и удаление ресурса |
-| CRUD workflow | Создание, чтение по ID и через коллекцию, обновление, повторное чтение, удаление и проверка отсутствия в обоих endpoints |
-| `GET /users/:id` | User schema для `id`, вложенных `address.geo` и `company` |
+| `GET /posts/:id` | Existing post, JSON response header, and Post schema; missing or malformed ID returns `404` |
+| `GET /posts?userId=...` | Data-driven filtering for two users from a separate dataset; an unknown user returns an empty array |
+| `POST /posts` | Creates a post and validates the response against the Post schema |
+| `PUT /posts/:id` | Replaces a post and validates the response against the Post schema; a missing ID returns `404` and does not create a resource |
+| `PATCH /posts/:id` | Partially updates a post; verifies other fields persist after a follow-up GET; a missing ID returns `404` and does not create a resource |
+| `DELETE /posts/:id` | Successful response and resource deletion |
+| CRUD workflow | Creates, reads by ID and from the collection, updates, reads again, deletes, and verifies absence from both endpoints |
+| `GET /users/:id` | User schema for `id`, nested `address.geo`, and `company` |
 
-Тесты запускаются параллельно с изолированной базой на worker. Создаваемые сценариями записи используют уникальные данные и удаляются после проверок.
+Tests run in parallel with a separate database for each worker. Scenarios that create records use unique data and remove those records after verification.
 
-Текущий локальный JSON Server предназначен для обучения и не реализует бизнес-валидацию, аутентификацию или авторизацию. Поэтому проверки неверных бизнес-данных и ответов `401`/`403` пока не покрыты; для них нужен API с соответствующими правилами и доступом.
+The local JSON Server does not implement business validation, authentication, or authorization. Invalid business data and `401`/`403` responses are therefore not covered; those scenarios require an API that implements the corresponding rules and access controls.
