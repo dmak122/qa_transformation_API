@@ -7,7 +7,7 @@ An API automation learning project built with TypeScript and Playwright. Tests r
 ```bash
 npm ci
 npm test
-npx tsc --noEmit
+npm run typecheck
 ```
 
 `npm test` runs Playwright. A fixture automatically starts a local API server for each worker and stops it after the tests finish. Each worker gets its own port and a temporary copy of the seed data from `data/db.json`, so changes made by one worker do not affect another.
@@ -25,6 +25,9 @@ tests/
     posts.crud.spec.ts       Independent end-to-end CRUD scenario
     users.api.ts             HTTP methods for the Users resource
     users.spec.ts            Users tests
+  external/
+    restful-booker.api.ts    Client for the external Restful Booker API
+    restful-booker.auth.spec.ts Authentication and authorization scenarios
   data/
     posts-by-user.cases.ts   Dataset for parameterized GET tests
   fixtures/
@@ -36,6 +39,7 @@ tests/
     post.schema.ts           Post JSON Schema and Ajv validation
     user.schema.ts           User JSON Schema and nested-response validation
 playwright.config.ts         Playwright configuration
+playwright.external.config.ts Separate configuration for external API tests
 ```
 
 ## API Layer
@@ -49,7 +53,7 @@ The local API is for learning purposes and is not a production service. Test cha
 
 ## CI
 
-The GitHub Actions workflow at `.github/workflows/api-tests.yml` runs `npm ci` and `npm test` on pushes and pull requests targeting `main`.
+The GitHub Actions workflow at `.github/workflows/api-tests.yml` runs `npm ci`, `npm run typecheck`, and `npm test` on pushes and pull requests targeting `main`. External API tests are intentionally excluded from CI because the public practice service may be unavailable or rate-limited.
 
 ## Coverage and Limitations
 
@@ -67,3 +71,17 @@ The GitHub Actions workflow at `.github/workflows/api-tests.yml` runs `npm ci` a
 Tests run in parallel with a separate database for each worker. Scenarios that create records use unique data and remove those records after verification.
 
 The local JSON Server does not implement business validation, authentication, or authorization. Invalid business data and `401`/`403` responses are therefore not covered; those scenarios require an API that implements the corresponding rules and access controls.
+
+## External API Practice
+
+The optional Restful Booker authentication tests are kept separate from the local suite. They verify that invalid credentials return `{"reason":"Bad credentials"}` without a token, that PUT, PATCH, and DELETE reject missing or invalid token credentials, that PUT, PATCH, and DELETE accept valid Basic Auth, and that PUT, PATCH, and DELETE reject invalid Basic Auth. PUT/PATCH updates are verified with a follow-up GET. Tests use unique bookings and clean up only the bookings they create.
+
+Set `RESTFUL_BOOKER_USERNAME` and `RESTFUL_BOOKER_PASSWORD` before running the external test. The API's documented demo credentials may be used for practice; do not put credentials in source code.
+
+```powershell
+$env:RESTFUL_BOOKER_USERNAME = "your-demo-username"
+$env:RESTFUL_BOOKER_PASSWORD = "your-demo-password"
+npm run test:external
+```
+
+External API availability and rate limits may vary. These tests are not included in `npm test` or the regular CI workflow.

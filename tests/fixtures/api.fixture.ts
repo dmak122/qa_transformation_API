@@ -113,13 +113,13 @@ async function stopApiServer(serverProcess: ChildProcess): Promise<void> {
 
 export const test = base.extend<ApiFixtures, ApiWorkerFixtures>({
   apiBaseURL: [
-    async ({}, use, workerInfo) => {
+    async ({}, use) => {
       const port = await getAvailablePort();
       const temporaryDirectory = mkdtempSync(join(tmpdir(), 'sb-api-test-'));
       const databasePath = join(temporaryDirectory, 'db.json');
       const baseURL = `http://127.0.0.1:${port}`;
       try {
-        copyFileSync(resolve(workerInfo.project.testDir, '../data/db.json'), databasePath);
+        copyFileSync(resolve(__dirname, '../../data/db.json'), databasePath);
         const serverProcess = spawn(
           process.execPath,
           [

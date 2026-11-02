@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "playwright test"
+    "test": "playwright test",
+    "typecheck": "tsc --noEmit",
+    "test:external": "playwright test --config=playwright.external.config.ts"
   },
   "keywords": [],
   "author": "",
