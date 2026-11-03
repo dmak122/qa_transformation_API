@@ -1,9 +1,6 @@
 import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
-  testDir: './tests',
+  testDir: './tests/api',
   reporter: [['list'], ['html', { open: 'never' }]],
-  use: {
-    baseURL: 'https://jsonplaceholder.typicode.com',
-  },
 });
