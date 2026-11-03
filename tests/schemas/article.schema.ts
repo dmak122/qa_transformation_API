@@ -1,13 +1,13 @@
 import Ajv, { type JSONSchemaType } from 'ajv';
 
-export type PostResponse = {
+export type ArticleResponse = {
   id: number;
   userId: number;
   title: string;
   body: string;
 };
 
-export const postSchema: JSONSchemaType<PostResponse> = {
+export const articleSchema: JSONSchemaType<ArticleResponse> = {
   type: 'object',
   properties: {
     id: { type: 'integer' },
@@ -19,11 +19,11 @@ export const postSchema: JSONSchemaType<PostResponse> = {
 };
 
 const ajv = new Ajv({ allErrors: true });
-const validatePost = ajv.compile(postSchema);
+const validateArticle = ajv.compile(articleSchema);
 
-export function parsePostResponse(data: unknown): PostResponse {
-  if (!validatePost(data)) {
-    throw new Error(`Invalid Post response: ${ajv.errorsText(validatePost.errors)}`);
+export function parseArticleResponse(data: unknown): ArticleResponse {
+  if (!validateArticle(data)) {
+    throw new Error(`Invalid Article response: ${ajv.errorsText(validateArticle.errors)}`);
   }
 
   return data;

@@ -1,22 +1,22 @@
 {
-  "posts": [
+  "articles": [
     {
       "id": 1,
       "userId": 1,
-      "title": "First post",
-      "body": "Seed post for API tests."
+      "title": "First article",
+      "body": "Seed article for API tests."
     },
     {
       "id": 2,
       "userId": 1,
-      "title": "Second post",
-      "body": "Another seed post for user 1."
+      "title": "Second article",
+      "body": "Another seed article for user 1."
     },
     {
       "id": 3,
       "userId": 2,
-      "title": "Third post",
-      "body": "Seed post for user 2."
+      "title": "Third article",
+      "body": "Seed article for user 2."
     }
   ],
   "users": [

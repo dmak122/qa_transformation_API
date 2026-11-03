@@ -5,7 +5,7 @@ import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import type { APIRequestContext } from '@playwright/test';
-import { PostsApi } from '../api/posts.api';
+import { ArticlesApi } from '../api/articles.api';
 import { UsersApi } from '../api/users.api';
 import { createApiRequestOptions } from '../helpers/api-request-options';
 
@@ -15,7 +15,7 @@ type ApiWorkerFixtures = {
 
 type ApiFixtures = {
   apiRequest: APIRequestContext;
-  postsApi: PostsApi;
+  articlesApi: ArticlesApi;
   usersApi: UsersApi;
 };
 
@@ -63,7 +63,7 @@ async function waitForApiServer(
     }
 
     try {
-      const response = await fetch(`${baseURL}/posts`, {
+      const response = await fetch(`${baseURL}/articles`, {
         signal: AbortSignal.timeout(1_000),
       });
       if (response.ok) {
@@ -164,8 +164,8 @@ export const test = base.extend<ApiFixtures, ApiWorkerFixtures>({
       await apiRequest.dispose();
     }
   },
-  postsApi: async ({ apiRequest }, use) => {
-    await use(new PostsApi(apiRequest));
+  articlesApi: async ({ apiRequest }, use) => {
+    await use(new ArticlesApi(apiRequest));
   },
   usersApi: async ({ apiRequest }, use) => {
     await use(new UsersApi(apiRequest));

@@ -19,24 +19,24 @@ data/
   db.json                    Seed data for the local API
 tests/
   api/
-    posts.api.ts             HTTP methods for the Posts resource
-    posts.read.spec.ts       Posts read tests
-    posts.write.spec.ts      POST, PUT, PATCH, and DELETE tests
-    posts.crud.spec.ts       Independent end-to-end CRUD scenario
+    articles.api.ts          HTTP methods for the Articles resource
+    articles.read.spec.ts    Articles read tests
+    articles.write.spec.ts   POST, PUT, PATCH, and DELETE tests
+    articles.crud.spec.ts    Independent end-to-end CRUD scenario
     users.api.ts             HTTP methods for the Users resource
-    users.spec.ts            Users tests
+    users.spec.ts             Users tests
   external/
     restful-booker.api.ts    Client for the external Restful Booker API
     restful-booker.auth.spec.ts Authentication and authorization scenarios
   data/
-    posts-by-user.cases.ts   Dataset for parameterized GET tests
+    articles-by-user.cases.ts Dataset for parameterized GET tests
   fixtures/
     api.fixture.ts           Worker servers and test API clients
   helpers/
     add-test-description.ts  Adds descriptions to the Playwright report
     api-request-options.ts   Shared base URL and HTTP headers
   schemas/
-    post.schema.ts           Post JSON Schema and Ajv validation
+    article.schema.ts        Article JSON Schema and Ajv validation
     user.schema.ts           User JSON Schema and nested-response validation
 playwright.config.ts         Playwright configuration
 playwright.external.config.ts Separate configuration for external API tests
@@ -47,7 +47,18 @@ playwright.external.config.ts Separate configuration for external API tests
 1. A worker-scoped fixture creates a temporary copy of the seed data and starts JSON Server on an available port.
 2. `apiRequest` creates an `APIRequestContext` with the worker's URL and the `Accept: application/json` header.
 3. API clients encapsulate routes and HTTP requests. Tests verify response status codes and content.
-4. `parsePostResponse` validates a Post response against its JSON Schema and returns a typed object.
+4. `parseArticleResponse` validates an Article response against its JSON Schema and returns a typed object.
+
+### Resource Path vs. HTTP Request
+
+`/articles` is a resource path, not a complete request. A request combines an HTTP method with a URL and may also include headers and a body. For example:
+
+```http
+GET http://127.0.0.1:<worker-port>/articles/1
+Accept: application/json
+```
+
+Here, `GET` is the method, `/articles/1` is the path to one article, and `Accept` is a header describing the desired response format. The query URL `GET /articles?userId=1` addresses the Articles collection and adds a filter. The local API client sends these requests; the `.spec.ts` test checks the responses.
 
 The local API is for learning purposes and is not a production service. Test changes do not modify the original `data/db.json`.
 
@@ -59,12 +70,12 @@ The GitHub Actions workflow at `.github/workflows/api-tests.yml` runs `npm ci`, 
 
 | Area | Coverage |
 |---|---|
-| `GET /posts/:id` | Existing post, JSON response header, and Post schema; missing or malformed ID returns `404` |
-| `GET /posts?userId=...` | Data-driven filtering for two users from a separate dataset; an unknown user returns an empty array |
-| `POST /posts` | Creates a post and validates the response against the Post schema |
-| `PUT /posts/:id` | Replaces a post and validates the response against the Post schema; a missing ID returns `404` and does not create a resource |
-| `PATCH /posts/:id` | Partially updates a post; verifies other fields persist after a follow-up GET; a missing ID returns `404` and does not create a resource |
-| `DELETE /posts/:id` | Successful response and resource deletion |
+| `GET /articles/:id` | Existing article, JSON response header, and Article schema; missing or malformed ID returns `404` |
+| `GET /articles?userId=...` | Data-driven filtering for two users from a separate dataset; an unknown user returns an empty array |
+| `POST /articles` | Creates an article and validates the response against the Article schema |
+| `PUT /articles/:id` | Replaces an article and validates the response against the Article schema; a missing ID returns `404` and does not create a resource |
+| `PATCH /articles/:id` | Partially updates an article; verifies other fields persist after a follow-up GET; a missing ID returns `404` and does not create a resource |
+| `DELETE /articles/:id` | Successful response and resource deletion |
 | CRUD workflow | Creates, reads by ID and from the collection, updates, reads again, deletes, and verifies absence from both endpoints |
 | `GET /users/:id` | User schema for `id`, nested `address.geo`, and `company` |
 
